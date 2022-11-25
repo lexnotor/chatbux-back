@@ -126,7 +126,7 @@ export const userLogout = (req, res) => {
         return res.status(401).json({ msg: 'Logout impossible, unknown user' })
     }
     const tokenIndex = allUserOnline.findIndex(user => {
-        user.token == req.user.token
+        return user.token == req.user.token
     });
     if (tokenIndex == -1) {
         return res.status(200).json({ msg: 'Logout impossible, not connected' })
@@ -174,7 +174,7 @@ export const refreshToken = async (req, res) => {
         userToRefresh.id = userData.id;
         userToRefresh.username = userData.username;
 
-        return res.status(200).json({ token: userToken, msg: 'Connected', ...toSerialize });
+        return res.status(200).json({ token: userToRefresh.token, msg: 'Connected', ...toSerialize });
     } catch (error) {
         return res.status(503).json({ msg: 'A error occurate, please contact admin' });
     }
