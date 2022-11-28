@@ -3,12 +3,16 @@ import passport from "passport";
 import { Strategy, ExtractJwt } from "passport-jwt"
 import { allUserOnline, privateKey } from "./psw-manager/index.js";
 import connectRouter from './routes/connexion.routes.js'
+import userRouter from './routes/account.routes.js'
+import chatRouter from './routes/chat.routes.js'
 
 const app = e();
 
 app.use(e.urlencoded({ extended: false }));
 
 app.use('/api/v1/connect', connectRouter);
+app.use('/api/v1/user', userRouter);
+app.use('/api/v1/chat', chatRouter);
 
 
 

@@ -2,15 +2,26 @@ import app from "./app.js";
 import http from 'http';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import { v2 as cloudinaryV2 } from 'cloudinary'
 
 dotenv.config()
-console.log(process.env.MONGODB_URI);
+
+// configure mongodb
 await mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log("Connection on database : Ok"))
+    .then(() => console.log("Connection to database : Ok"))
     .catch((reason) => {
         console.log(reason);
         process.exit(0);
     })
+
+
+// configure cloudinary
+cloudinaryV2.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET
+});
+
 
 const server = http.createServer(app)
 
