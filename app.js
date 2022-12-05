@@ -10,6 +10,17 @@ const app = e();
 
 app.use(e.urlencoded({ extended: false }));
 
+app.use((_, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    next()
+})
+
+app.options(/.*/, (_, res) => {
+    res.setHeader('Access-Control-Allow-Methods', 'POST,GET,PUT,OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    res.end()
+})
+
 app.use('/api/v1/connect', connectRouter);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/chat', chatRouter);

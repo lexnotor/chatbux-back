@@ -46,7 +46,7 @@ export const userSchema = new Schema({
     }],
     conversations: [{
         type: Types.ObjectId,
-        ref: 'conversations'
+        ref: 'chats'
     }]
 })
 

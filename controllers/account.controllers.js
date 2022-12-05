@@ -1,3 +1,4 @@
+import { v2 as cloudinaryV2 } from "cloudinary";
 import e from "express";
 import mongoose from "mongoose";
 import { User } from "../database/models.js";
@@ -33,6 +34,9 @@ export const getMyInfo = async (req, res) => {
         { $match: { _id: new mongoose.Types.ObjectId(req.user.id) } },
         { $project: { password: 0 } }
     ]).exec();
+    await User.populate(response, { path: 'groupes', select: ['membres', 'latest'] });
+    await User.populate(response, { path: 'conversations', select: ['chatter', 'latest'] });
+    await User.populate(response, { path: 'conversations.chatter', select: ['nom', 'prenom', 'username', 'image'] });
     const userData = response.map(elm => ({
         id: elm._id,
         nom: elm.nom,
@@ -74,4 +78,28 @@ export const getAllUsers = async (req, res) => {
         image: elm.image
     }))
     return res.status(200).json({ data: userList })
+}
+
+export const uploadProfile = async (req, res) => {
+    if (!req.user) {
+        return res.status(403).json({ msg: "Uploading failled, user not connected" })
+    }
+    if (req.file) {
+        try {
+            const base64_encoded = req.file.buffer.toString("base64");
+            const cloudFile = await cloudinaryV2.uploader.upload(`data:${req.file.mimetype};base64,${base64_encoded}`);
+            const url = cloudFile.url;
+            const response = await User.updateOne({
+                _id: new mongoose.Types.ObjectId(req.user.id)
+            }, {
+                $set: {
+                    image: url
+                }
+            });
+            if (response.modifiedCount == 1) return res.status(200).json({ msg: 'Photo Uploaded', data: url });
+            else return res.status(400).json({ msg: 'Updating picturer failled, ' });
+        } catch (error) {
+            return res.status(400).json({ msg: 'Sending picturer failled' })
+        }
+    }
 }

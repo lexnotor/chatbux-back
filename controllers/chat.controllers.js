@@ -42,16 +42,25 @@ export const sendMessage = async (req, res) => {
     }
     // Save the message in the data base
     try {
-        const response = await Chat.updateOne({
+        const exist = await Chat.findOne({
+            chatter: {
+                $all: [
+                    new mongoose.Types.ObjectId(to),
+                    new mongoose.Types.ObjectId(req.user.id)
+                ]
+            }
+        }, { _id: 1 });
+        const filter = exist ? { _id: exist._id } : {
             chatter: [
                 new mongoose.Types.ObjectId(to),
                 new mongoose.Types.ObjectId(req.user.id)
             ]
-        }, {
+        };
+        const response = await Chat.updateOne(filter, {
             $push: {
                 messages: {
                     sender: new mongoose.Types.ObjectId(req.user.id),
-                    genre: 'text',
+                    genre: type,
                     content: content
                 }
             },
@@ -69,10 +78,53 @@ export const sendMessage = async (req, res) => {
                     conversations: response.upsertedId
                 }
             }).exec();
-            return res.status(201).json({ msg: 'Begin new Chat', id: response.upsertedId })
+            const newChat = await Chat.findOne({
+                chatter: {
+                    $all: [
+                        new mongoose.Types.ObjectId(to),
+                        new mongoose.Types.ObjectId(req.user.id)
+                    ]
+                }
+            });
+            const chatRes = {
+                id: newChat.id,
+                chatter: newChat.chatter,
+                latest: newChat.latest,
+                messages: newChat.messages.map(elm => ({
+                    id: elm.id,
+                    sender: elm.sender,
+                    genre: elm.genre,
+                    content: elm.content,
+                    time: elm.time,
+                    read: elm.read
+                }))
+            }
+            return res.status(201).json({ msg: 'Begin new Chat', id: response.upsertedId, data: chatRes })
         }
-        return res.status(200).json({ msg: `Message sent, ${response.modifiedCount}` })
+        const newChat = await Chat.findOne({
+            chatter: {
+                $all: [
+                    new mongoose.Types.ObjectId(to),
+                    new mongoose.Types.ObjectId(req.user.id)
+                ]
+            }
+        });
+        const chatRes = {
+            id: newChat.id,
+            chatter: newChat.chatter,
+            latest: newChat.latest,
+            messages: newChat.messages.map(elm => ({
+                id: elm.id,
+                sender: elm.sender,
+                genre: elm.genre,
+                content: elm.content,
+                time: elm.time,
+                read: elm.read
+            }))
+        }
+        return res.status(200).json({ msg: `Message sent, ${response.modifiedCount}`, data: chatRes })
     } catch (error) {
+        console.log(error);
         return res.status(400).json({ msg: `sending impossible` })
     }
 }
@@ -114,6 +166,44 @@ export const getOneChat = async (req, res) => {
                 read: elm.read
             }))
         }
+        return res.status(200).json({ data: chatRes, msg: 'find' })
+    } catch (error) {
+        return res.status(400).json({ msg: 'Chat not found or not authorize' })
+    }
+}
+
+
+/**
+ * @param {e.Request} req 
+ * @param {e.Response} res 
+ */
+export const getAllChat = async (req, res) => {
+    if (!req.user) {
+        return res.status(403).json({ msg: "Can't get chats, user not connected" })
+    }
+    try {
+        const response = await Chat.find({
+            chatter: { $in: [new mongoose.Types.ObjectId(req.user.id)] }
+        }).exec();
+        if (!response) throw new Error("Not chat found");
+
+        const chatRes = []
+        response.forEach(chat => {
+            const chatParsed = {
+                id: chat.id,
+                chatter: chat.chatter,
+                latest: chat.latest,
+                messages: chat.messages.map(elm => ({
+                    id: elm.id,
+                    sender: elm.sender,
+                    genre: elm.genre,
+                    content: elm.content,
+                    time: elm.time,
+                    read: elm.read
+                }))
+            }
+            chatRes.push(chatParsed);
+        })
         return res.status(200).json({ data: chatRes, msg: 'find' })
     } catch (error) {
         return res.status(400).json({ msg: 'Chat not found or not authorize' })
