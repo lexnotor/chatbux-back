@@ -2,6 +2,7 @@ import e from "express";
 import mongoose from "mongoose";
 import { Chat, User } from "../database/models.js";
 import { v2 as cloudinaryV2 } from "cloudinary";
+import { allUserOnline } from "../psw-manager/index.js";
 
 
 
@@ -99,6 +100,10 @@ export const sendMessage = async (req, res) => {
                     read: elm.read
                 }))
             }
+            const receiverData = allUserOnline.find(elm => (elm.id == to && elm.socket));
+            if (receiverData && receiverData.socket.connected) {
+                receiverData.socket.emit('newmsg', chatRes)
+            }
             return res.status(201).json({ msg: 'Begin new Chat', id: response.upsertedId, data: chatRes })
         }
         const newChat = await Chat.findOne({
@@ -121,6 +126,10 @@ export const sendMessage = async (req, res) => {
                 time: elm.time,
                 read: elm.read
             }))
+        }
+        const receiverData = allUserOnline.find(elm => (elm.id == to && elm.socket));
+        if (receiverData && receiverData.socket.connected) {
+            receiverData.socket.emit('newmsg', chatRes)
         }
         return res.status(200).json({ msg: `Message sent, ${response.modifiedCount}`, data: chatRes })
     } catch (error) {

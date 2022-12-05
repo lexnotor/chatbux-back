@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
+import { Socket } from 'socket.io';
 
 // Use this to generate JSON Web Token
 export const privateKey = crypto.createHash('sha512').update(new Date().toDateString()).digest('hex');
@@ -17,6 +18,6 @@ export const createToken = (data = {}, key = privateKey) => {
 
 // stock session
 /**
- * @type {{ token: String, id: String, username: String }[]}
+ * @type {{ token: String, id: String, username: String, socket: Socket }[]}
  */
 export const allUserOnline = [];
