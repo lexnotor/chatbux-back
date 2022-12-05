@@ -55,6 +55,7 @@ export const userLogin = async (req, res) => {
 
         return res.status(200).json({ token: userToken, msg: 'Connected', ...toSerialize });
     } catch (error) {
+        console.log(error);
         return res.status(503).json({ msg: 'A error occurate, please contact admin' });
     }
 }
@@ -111,7 +112,8 @@ export const userSignup = (req, res) => {
         .then(() => {
             return res.status(201).json({ msg: "user created" });
         })
-        .catch(() => {
+        .catch((error) => {
+            console.log(error);
             return res.status(409).json({ msg: "user can't be create" })
         });
 }
