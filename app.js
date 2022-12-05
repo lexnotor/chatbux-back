@@ -11,7 +11,7 @@ const app = e();
 app.use(e.urlencoded({ extended: false }));
 
 app.use((_, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URI);
     next()
 })
 

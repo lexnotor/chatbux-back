@@ -28,7 +28,7 @@ cloudinaryV2.config({
 
 const server = http.createServer(app)
 
-const ioServer = new Server(server, { cors: { origin: '*' } })
+const ioServer = new Server(server, { cors: { origin: process.env.FRONTEND_URI } })
 
 ioServer.on('connection', socket => {
     socket.on('register', (token) => {
