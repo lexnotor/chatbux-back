@@ -95,7 +95,8 @@ export const userSignup = (req, res) => {
     if (psw.length < 6) {
         return res.status(406).json({ msg: "psw must contain at least 6 characters" });
     }
-    if (/^[a-zA-Z0-9._]{3, 20}@[a-z0-9]{3, 20}\.[a-z]{2,10}$/.test(psw)) {
+    if (!/^[a-zA-Z0-9._]{3,20}@[a-z0-9]{3,20}\.[a-z]{2,10}$/.test(email)) {
+        console.log(email);
         return res.status(406).json({ msg: "Provide a valid email" });
     }
 
@@ -112,8 +113,7 @@ export const userSignup = (req, res) => {
         .then(() => {
             return res.status(201).json({ msg: "user created" });
         })
-        .catch((error) => {
-            console.log(error);
+        .catch(() => {
             return res.status(409).json({ msg: "user can't be create" })
         });
 }
