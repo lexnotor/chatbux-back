@@ -17,6 +17,22 @@ describe("Creation d'un compte", () => {
     after(() => {
         r.close();
     })
+    it("should create user Test02", (done) => {
+        r.post('/api/v1/connect/signup')
+            .type('form')
+            .send({
+                email: "usertest2@chatbux.local",
+                psw: "Test123",
+                username: "usertest2",
+                nom: "ChatbuxUser",
+                prenom: "ChatbuxTest"
+            })
+            .end((err, res) => {
+                assert.equal(res.body.msg, "user created")
+                assert.equal(res.status, 201)
+                done()
+            })
+    })
     it("shouldn't create user Test01, He exists", (done) => {
         r.post('/api/v1/connect/signup')
             .type('form')
